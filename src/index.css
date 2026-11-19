@@ -1,0 +1,104 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* The pub-darts palette. Every colour in the app comes from these tokens —
+   never write a literal colour anywhere else. Names are the point. */
+:root {
+  /* "Nobody chose this carpet, it came with the pub." */
+  --pub-carpet-violet: #4f46e5;
+  /* "Is that lager or dishwater?" — the marker board. */
+  --flat-lager-teal: #0f766e;
+  /* Same pint, ten minutes later. */
+  --last-orders-teal: #134e4a;
+  /* The flight that lands somewhere unhelpful. */
+  --flight-tint: rgba(255, 255, 255, 0.08);
+  /* Chalk on the board, more accurate than us. */
+  --chalk-line: #ecfdf5;
+  /* "Missed the double… again." */
+  --bounce-out-amber: #b45309;
+  /* Dead centre of the board: the double bull. */
+  --double-bull-red: #d7263d;
+  /* The chalkboard where the scores live. */
+  --chalkboard-white: #fff7ed;
+  /* The pub across the road. */
+  --black-dog-black: #111;
+  /* Could be the head on the pint. */
+  --beer-foam-white: #fff;
+  /* Whoever is at the oche gets the light. */
+  --last-dart-spotlight: rgba(255, 255, 255, 0.7);
+  /* Same kit, second half: the shadowed half of each player's pair. */
+  --bounce-out-amber-deep: #92400e;
+  --pub-carpet-violet-deep: #3730a3;
+  --double-bull-red-deep: #991b1b;
+  /* One two-colour kit per player: team shirt and its shaded twin. */
+  --player-one-base: var(--flat-lager-teal);
+  --player-one-shade: var(--last-orders-teal);
+  --player-two-base: var(--bounce-out-amber);
+  --player-two-shade: var(--bounce-out-amber-deep);
+  --player-three-base: var(--pub-carpet-violet);
+  --player-three-shade: var(--pub-carpet-violet-deep);
+  --player-four-base: var(--double-bull-red);
+  --player-four-shade: var(--double-bull-red-deep);
+  /* The players waiting their turn: no kit of their own, just two greys. */
+  --spectator-grey: #6b7280;
+  --spectator-grey-deep: #4b5563;
+  /* Generic pub surfaces. */
+  --bar-mat: #fff;
+  --bar-mat-ink: #111;
+  --pub-dark: #16171d;
+  --chalk-dust: #f3f4f6;
+}
+
+/* Cascadia Code (SIL OFL, see src/fonts/OFL.txt). Bundled locally as one
+   variable woff2 so the app never needs a network font. */
+@font-face {
+  font-family: 'Cascadia Code';
+  font-style: normal;
+  font-weight: 200 700;
+  font-display: swap;
+  src: url('./fonts/cascadia-code-latin.woff2') format('woff2');
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+/* Every screen speaks in caps, like the score board's names, so the rule sits
+   once here instead of on each screen. Display only: a typed name keeps the
+   case it was typed in. */
+body {
+  background: var(--bar-mat);
+  color: var(--bar-mat-ink);
+  font: 1rem/1.45 'Cascadia Code', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* The browser's own stylesheet sets text-transform: none on form controls, so a
+   button or field would not take the caps from body unless told to. This also
+   keeps a typed name's value untouched — the caps stay a display rule. */
+button,
+input,
+select,
+textarea {
+  text-transform: inherit;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: var(--pub-dark);
+    color: var(--chalk-dust);
+  }
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}

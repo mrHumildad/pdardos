@@ -1,0 +1,1801 @@
+/* Mobile-first layout: 52dvh score board, 8dvh header, 40dvh marker board. All
+   sizes in viewport units, no fixed pixels. Every colour comes from the palette
+   in src/index.css. */
+.game-screen {
+  display: grid;
+  grid-template-rows: 100dvh;
+  height: 100dvh;
+}
+
+/* The turn bar: four equal cells in the throwing player's kit — menu first, then
+   the three darts of the turn. Cells alternate between --player-base and
+   --player-shade, the pair playerPalette sets inline, like the scorer's rows. */
+.turn-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  overflow: hidden;
+  background: var(--player-base, var(--pub-carpet-violet));
+  color: var(--chalk-line);
+}
+
+.turn-bar__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--player-base, var(--pub-carpet-violet));
+}
+
+.turn-bar__cell:nth-child(even) {
+  background: var(--player-shade, var(--pub-carpet-violet-deep));
+}
+
+.turn-bar__dart {
+  width: 3.6dvh;
+  height: 7.2dvh;
+  color: var(--beer-foam-white);
+  opacity: 0.45;
+  /* Tilted off vertical, so the glyph reads as a dart in flight. */
+  transform: rotate(45deg);
+}
+
+/* Solid shapes, so the darts stay bold at their small width. */
+.turn-bar__dart-tip,
+.turn-bar__dart-shaft,
+.turn-bar__dart-flight {
+  fill: currentColor;
+}
+
+/* A thrown dart's value takes the dart's place, at full strength against the
+   cell's kit colour, in the player-name type like the round number. */
+.turn-bar__dart-value {
+  font-size: 4.2vh;
+  font-size: 4.2dvh;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* The whole home cell is the hit area. It wears the player-name type: "#N" at
+   the names' size and spacing, and it is also a button, so the round steps
+   aside every ten seconds to show a cog for two — the cell is a control, not
+   just a label. */
+.turn-bar__menu-button {
+  position: relative;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.turn-bar__round {
+  font-size: 4.2vh;
+  font-size: 4.2dvh;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  animation: turn-bar__round-hint 10s ease-in-out infinite;
+}
+
+/* Between turns the cell is inert without dimming, so it does not read as
+   missing for a second every hand-over. */
+.turn-bar__menu-button:disabled {
+  cursor: default;
+}
+
+/* The cog turns a quarter while it is up, so the hint also reads as "this
+   twists open". It is centred over the round and fades fully out in between. */
+.turn-bar__menu-gear {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 5dvh;
+  height: 5dvh;
+  opacity: 0;
+  animation: turn-bar__menu-hint 10s ease-in-out infinite;
+}
+
+/* One 10s cycle: the round hands the cell to the cog at 0.3s, the cog holds
+   until 1.9s and is gone by 2.2s, and the round returns for the remaining 7.8s. */
+@keyframes turn-bar__menu-hint {
+  0% {
+    opacity: 0;
+    transform: rotate(0deg) scale(0.7);
+  }
+  3% {
+    opacity: 1;
+    transform: rotate(15deg) scale(1);
+  }
+  19% {
+    opacity: 1;
+    transform: rotate(90deg) scale(1);
+  }
+  22% {
+    opacity: 0;
+    transform: rotate(105deg) scale(0.7);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(105deg) scale(0.7);
+  }
+}
+
+@keyframes turn-bar__round-hint {
+  0% {
+    opacity: 1;
+  }
+  3% {
+    opacity: 0;
+  }
+  19% {
+    opacity: 0;
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.game-body {
+  display: grid;
+  grid-template-rows: 52dvh 8dvh 40dvh;
+  min-height: 0;
+}
+
+/* Marker board: five proportional rows, doubling as the dart input board. */
+.marker-board {
+  display: grid;
+  grid-template-rows: 0.6fr 1.1fr 1.1fr 1.1fr 1.1fr;
+  min-height: 0;
+  background: var(--flat-lager-teal);
+}
+
+/* While the turn hands over, the input board blinks inside out: every cell swaps
+   its ink and its background, so the checkerboard flips. 480ms × 4 covers the
+   1600ms pause plus the 320ms swap and lands back on normal colours. Only
+   background-colour and colour move, so the bull icons keep the green ring and
+   red dot they set themselves; the checker-inverted rows start from white. */
+.marker-board--handover .marker-board__row .marker-board__cell:nth-child(odd) {
+  animation: marker-blink-from-black 480ms linear 4;
+}
+
+.marker-board--handover .marker-board__row .marker-board__cell:nth-child(even) {
+  animation: marker-blink-from-white 480ms linear 4;
+}
+
+.marker-board--handover .marker-board__row--checker-inverted .marker-board__cell:nth-child(odd) {
+  animation: marker-blink-from-white 480ms linear 4;
+}
+
+.marker-board--handover .marker-board__row--checker-inverted .marker-board__cell:nth-child(even) {
+  animation: marker-blink-from-black 480ms linear 4;
+}
+
+/* Undo and out blink their own pairs instead of the checkerboard swap: the
+   throwing player's shade against black, and red against black. */
+.marker-board--handover .marker-board__row--actions .marker-board__cell:nth-child(3) {
+  animation: marker-blink-undo 480ms linear 4;
+}
+
+.marker-board--handover .marker-board__row--actions .marker-board__cell:nth-child(4) {
+  animation: marker-blink-out 480ms linear 4;
+}
+
+/* The blink is the signal that the board is closed, so its cells show their
+   colours at full strength there: the 50% disabled fade would wash it out. */
+.marker-board--handover .marker-board__cell:disabled {
+  opacity: 1;
+}
+
+@keyframes marker-blink-from-black {
+  0%,
+  49% {
+    background-color: var(--black-dog-black);
+    color: var(--beer-foam-white);
+  }
+  50%,
+  99% {
+    background-color: var(--beer-foam-white);
+    color: var(--black-dog-black);
+  }
+  100% {
+    background-color: var(--black-dog-black);
+    color: var(--beer-foam-white);
+  }
+}
+
+@keyframes marker-blink-from-white {
+  0%,
+  49% {
+    background-color: var(--beer-foam-white);
+    color: var(--black-dog-black);
+  }
+  50%,
+  99% {
+    background-color: var(--black-dog-black);
+    color: var(--beer-foam-white);
+  }
+  100% {
+    background-color: var(--beer-foam-white);
+    color: var(--black-dog-black);
+  }
+}
+
+@keyframes marker-blink-undo {
+  0%,
+  49% {
+    background-color: var(--player-shade, var(--spectator-grey-deep));
+    color: var(--black-dog-black);
+  }
+  50%,
+  99% {
+    background-color: var(--black-dog-black);
+    color: var(--player-shade, var(--spectator-grey-deep));
+  }
+  100% {
+    background-color: var(--player-shade, var(--spectator-grey-deep));
+    color: var(--black-dog-black);
+  }
+}
+
+@keyframes marker-blink-out {
+  0%,
+  49% {
+    background-color: var(--black-dog-black);
+    color: var(--double-bull-red);
+  }
+  50%,
+  99% {
+    background-color: var(--double-bull-red);
+    color: var(--black-dog-black);
+  }
+  100% {
+    background-color: var(--black-dog-black);
+    color: var(--double-bull-red);
+  }
+}
+
+.marker-board__row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  min-height: 0;
+  background: var(--flat-lager-teal);
+}
+
+.marker-board__row:nth-child(even) {
+  background: var(--last-orders-teal);
+}
+
+/* Action row: four columns instead of six, at 1 / 1 / 2 / 2 of the width. */
+.marker-board__row--actions {
+  grid-template-columns: 1fr 1fr 2fr 2fr;
+}
+
+.marker-board__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--chalk-line);
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.marker-board__cell:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+/* Press feedback shared by every marker button: the glyph shrinks a little and
+   eases back. The pressed class is set from pointer events, not :active, because
+   a button that disables itself mid-press loses :active and stops listening. */
+.marker-board__cell > * {
+  transition: transform 140ms ease-out;
+}
+
+.marker-board__cell--pressed > * {
+  transform: scale(0.8);
+}
+
+.marker-board__number {
+  font-size: 4vh;
+  font-size: 4dvh;
+  line-height: 1;
+}
+
+/* Vertical dividers so the six columns read as separate columns on every row
+   that has them; currentColor keeps each row's line visible on its own cells. */
+.marker-board__row:not(.marker-board__row--actions)
+  .marker-board__cell
+  + .marker-board__cell {
+  border-inline-start: 0.22em solid currentColor;
+}
+
+/* Horizontal dividers between the marker rows, action row included. */
+.marker-board__row .marker-board__cell {
+  border-block-end: 0.08em solid currentColor;
+}
+
+/* Conventional scoreboard marks: / single, X double, crossed circle triple.
+   Sized to the cell so the glyph covers it. */
+.dart-mark {
+  width: 100%;
+  height: 100%;
+}
+
+.marker-board__cell:nth-child(even) {
+  background: var(--flight-tint);
+}
+
+/* The board alternates whole cells between black and white; inverted rows start
+   on white so neighbouring rows interlock like a chessboard. */
+.marker-board__row .marker-board__cell:nth-child(odd) {
+  color: var(--beer-foam-white);
+  background: var(--black-dog-black);
+}
+
+.marker-board__row .marker-board__cell:nth-child(even) {
+  color: var(--black-dog-black);
+  background: var(--beer-foam-white);
+}
+
+.marker-board__row--checker-inverted .marker-board__cell:nth-child(odd) {
+  color: var(--black-dog-black);
+  background: var(--beer-foam-white);
+}
+
+.marker-board__row--checker-inverted .marker-board__cell:nth-child(even) {
+  color: var(--beer-foam-white);
+  background: var(--black-dog-black);
+}
+
+/* Undo wears the throwing player's shaded kit with black content, so it reads
+   as that player's own action. */
+.marker-board__row--actions .marker-board__cell:nth-child(3) {
+  color: var(--black-dog-black);
+  background: var(--player-shade, var(--spectator-grey-deep));
+}
+
+/* The undo arrow sits a little inside its cell instead of filling it edge to
+   edge, so the shape keeps some breathing room; the shared press feedback
+   shrinks it like every other marker button. */
+.marker-board__row--actions .marker-board__cell:nth-child(3) .marker-board__icon {
+  inset: 10%;
+  width: 80%;
+  height: 80%;
+}
+
+/* The out pile rests as a square about the height of the row, then squashes
+   wide on press: the tiers stretch across the button and sit a little shorter.
+   Width 58% of the wide cell is that square at the reference cell ratio. */
+.marker-board__row--actions .marker-board__cell:nth-child(4) .marker-board__icon {
+  inset: 0;
+  margin: auto;
+  width: 58%;
+  height: 100%;
+  transition:
+    width 140ms ease-out,
+    height 140ms ease-out,
+    inset 140ms ease-out;
+}
+
+.marker-board__row--actions .marker-board__cell:nth-child(4):active .marker-board__icon {
+  inset: 6% 0;
+  width: 100%;
+  height: 88%;
+}
+
+/* Out is the miss: black cell, red word, so it stands apart from the actions. */
+.marker-board__row--actions .marker-board__cell:nth-child(4) {
+  color: var(--double-bull-red);
+  background: var(--black-dog-black);
+}
+
+/* Action icons cover their whole cell too. */
+.marker-board__icon {
+  width: 100%;
+  height: 100%;
+}
+
+/* The single bull is a green donut, readable on both chessboard cells. */
+.marker-board__icon--single-bull circle {
+  stroke: var(--flat-lager-teal);
+}
+
+/* The double bull is one big red dot. */
+.marker-board__icon--double-bull circle {
+  fill: var(--double-bull-red);
+  stroke: none;
+}
+
+/* Out of flow, so a square icon can never stretch the grid row it sits in. */
+.marker-board__cell .dart-mark,
+.marker-board__cell .marker-board__icon {
+  position: absolute;
+  inset: 0;
+}
+
+/* Score board: one column per player (2 to 4), nine rows. */
+.score-board {
+  display: grid;
+  grid-template-columns: repeat(var(--score-board-columns, 4), 1fr);
+  grid-template-rows: 1.4fr repeat(8, 1fr);
+  min-height: 0;
+  background: var(--bounce-out-amber);
+}
+
+.score-board__row {
+  display: contents;
+}
+
+.score-board__cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  color: var(--chalkboard-white);
+  font-size: 5vh;
+  font-size: 5dvh;
+  line-height: 1;
+  background: var(--player-base, var(--bounce-out-amber));
+}
+
+.score-board__cell--points {
+  font-weight: 700;
+  font-size: 4.5vh;
+  font-size: 4.5dvh;
+}
+
+.score-board__cell--name {
+  font-size: 4.2vh;
+  font-size: 4.2dvh;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* A target with no marks yet shows its own number instead of an icon, faded so
+   it reads as a gap rather than a scored value. */
+.score-board__target {
+  font-size: 4vh;
+  font-size: 4dvh;
+  opacity: 0.25;
+}
+
+/* Same fade for an untouched bull, which shows a dot instead of the circle. */
+.score-board__bull-dot {
+  opacity: 0.25;
+}
+
+/* A best of three or more: one dot per leg the match needs, stacked at the
+   right margin of the points cell. A dot is white at a quarter strength until
+   the leg is banked, then full white. */
+.score-board__legs {
+  position: absolute;
+  /* A little air between the dots and the cell's right edge. */
+  inset-inline-end: 1dvh;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4dvh;
+  transform: translateY(-50%);
+}
+
+.score-board__leg {
+  width: 1.1dvh;
+  height: 1.1dvh;
+  opacity: 0.25;
+}
+
+.score-board__leg circle {
+  fill: var(--beer-foam-white);
+}
+
+.score-board__leg--won {
+  opacity: 1;
+}
+
+/* A target every player has closed is crossed off: each cell draws its stretch
+   of the line edge to edge, so the segments join into one chalk rule across the
+   row. Drawn over the marks, centred in the row. */
+.score-board__cell--line::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 0.35dvh;
+  background: var(--chalk-line);
+  transform: translateY(-50%);
+}
+
+/* Alternate the rows between the two halves of each player's palette, so every
+   column is a stripe of its own two colours. */
+.score-board__row:nth-child(even) .score-board__cell {
+  background: var(--player-shade, var(--bounce-out-amber));
+}
+
+/* Spotlight on the player who is throwing. Cells keep only their left and right
+   edges, so no line falls between two cells of the same player. Only the first
+   cell closes the column at the top; the bull row stays open at the bottom. */
+.score-board__cell--active {
+  box-shadow:
+    inset 0.12em 0 0 var(--last-dart-spotlight),
+    inset -0.12em 0 0 var(--last-dart-spotlight);
+}
+
+.score-board__row:first-child .score-board__cell--active {
+  box-shadow:
+    inset 0.12em 0 0 var(--last-dart-spotlight),
+    inset -0.12em 0 0 var(--last-dart-spotlight),
+    inset 0 0.12em 0 var(--last-dart-spotlight);
+}
+
+
+/* Hand-over: when the turn passes, the kits cross-fade instead of snapping and
+   the turn bar steps in with the next thrower. The bar's 320ms is SWAP_MS in
+   src/CricketScreen.jsx, which keeps the board halted until it finishes. */
+.turn-bar,
+.turn-bar__cell,
+.score-board__cell,
+.marker-board__row--actions .marker-board__cell:nth-child(3) {
+  transition:
+    background-color 280ms ease-out,
+    color 280ms ease-out;
+}
+
+.turn-bar--swapping {
+  animation: turn-bar-swap 320ms ease-out;
+}
+
+@keyframes turn-bar-swap {
+  0% {
+    opacity: 0.35;
+    transform: translateY(-8%);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A cell whose value a dart changed blinks for the two seconds the gain shows in
+   the name row, so the eye lands on what that dart did. Only the contents blink
+   — the SVG mark or the points span — so the cell keeps its kit colour. */
+.score-board__cell--gain > *,
+.score-board__cell--changed > * {
+  animation: score-board-blink 500ms linear 4;
+}
+
+@keyframes score-board-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.15;
+  }
+}
+
+/* Main menu: the same language as the boards — full-bleed regions butted
+   together, no gaps, no radii except the logo's own circle. Rows: the logo fills
+   what is left, New game 14dvh at the top as the primary action, then one 11dvh
+   strip per remaining entry — so the number of rows follows the entries that
+   are actually there (Continue appears only with a game to return to).
+   See the pub-darts-style skill. */
+.main-menu {
+  display: grid;
+  grid-template-rows: 1fr 14dvh;
+  grid-auto-rows: 11dvh;
+  height: 100dvh;
+  min-height: 0;
+  color: var(--chalk-dust);
+  background: var(--pub-dark);
+}
+
+.main-menu__logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* The app logo fills the slot the circle placeholder held. It is drawn whole
+   rather than clipped, so the dart tips under the skull stay in view. */
+.main-menu__logo {
+  width: min(62vw, 34dvh);
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+
+/* Each menu entry is a full-width strip, like the setup screen's strips, so the
+   whole row is the hit area. The strip keeps the small cell font so its rule
+   measures a hairline; the label sizes itself like a cell's glyph. */
+.main-menu__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  font: inherit;
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+  line-height: 1;
+  color: var(--black-dog-black);
+  background: var(--beer-foam-white);
+  border: 0;
+  border-block-end: 0.08em solid currentColor;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Continue rests on the blackboard, the way the marker board's miss does. */
+.main-menu__button--continue {
+  color: var(--beer-foam-white);
+  background: var(--black-dog-black);
+}
+
+/* New game is the primary action: the scorer board's amber, at full weight. */
+.main-menu__button--new {
+  color: var(--chalkboard-white);
+  background: var(--bounce-out-amber);
+}
+
+/* Import wears the identity violet, the colour of every title bar. */
+.main-menu__button--import {
+  color: var(--chalk-line);
+  background: var(--pub-carpet-violet);
+}
+
+.main-menu__label {
+  font-size: 5vh;
+  font-size: 5dvh;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: transform 140ms ease-out;
+}
+
+.main-menu__button:active .main-menu__label {
+  transform: scale(0.8);
+}
+
+/* Players screen: the same language again, on --pub-dark. Rows: header 14dvh,
+   saved list 44dvh (four 11dvh rows), name entry 10dvh, short entry 10dvh, kit
+   picker 10dvh, back and add 12dvh. The bottom rows are the ones that gave up
+   height so the list always has room for four players and never scrolls.
+   See the pub-darts-style skill. */
+.players-screen {
+  display: grid;
+  grid-template-rows: 14dvh 44dvh 10dvh 10dvh 10dvh 12dvh;
+  height: 100dvh;
+  min-height: 0;
+  color: var(--chalk-dust);
+  background: var(--pub-dark);
+  /* The whole screen speaks in caps, like the score board's names. */
+  text-transform: uppercase;
+}
+
+/* The title bar. With one page it is just the app's biggest word, centred; with
+   more than four players it grows a page arrow at each end. */
+.players-screen__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--chalk-line);
+  background: var(--pub-carpet-violet);
+  border-block-end: 0.02em solid currentColor;
+}
+
+/* The arrows take 8dvh at each end, which leaves the title 268px. */
+.players-screen__header--paged {
+  display: grid;
+  grid-template-columns: 8dvh 1fr 8dvh;
+}
+
+.players-screen__title {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 6vh;
+  font-size: 6dvh;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Beside the arrows the title steps down so "PLAYERS (12)" stays on one line in
+   the 268px between them. */
+.players-screen__header--paged .players-screen__title {
+  font-size: 4vh;
+  font-size: 4dvh;
+}
+
+/* Page arrows: whole cells, chalk chevrons, inert at the first and last page. */
+.players-screen__page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.players-screen__page:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.players-screen__page-icon {
+  width: 100%;
+  height: 100%;
+  transition: transform 140ms ease-out;
+}
+
+.players-screen__page:active .players-screen__page-icon {
+  transform: scale(0.8);
+}
+
+/* Saved players: chalk on the blackboard, one strip each, newest last. The
+   region is exactly four 11dvh rows and clips rather than scrolls — the header
+   arrows turn the pages. */
+.players-screen__list {
+  display: grid;
+  grid-auto-rows: 11dvh;
+  align-content: start;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /* A white edge between the saved players and the add form, there even when
+     fewer than four rows are left to draw it themselves. Painted inside as a
+     shadow, so it never takes a pixel from the 44dvh the rows need. */
+  box-shadow: inset 0 -0.08em 0 var(--chalk-line);
+  list-style: none;
+  font-size: clamp(0.8rem, 4.2vw, 1.35rem);
+}
+
+/* The row is kit, name, delete. Both end cells are their row's height wide —
+   11dvh by 11dvh — so the swatch is a square 1:1 block and the X matches it. */
+.players-screen__player {
+  display: grid;
+  grid-template-columns: 11dvh 1fr 11dvh;
+  min-height: 0;
+  color: var(--chalk-line);
+  background: var(--black-dog-black);
+  border-block-end: 0.08em solid currentColor;
+}
+
+/* The kit cell is a swatch, not a button, but it keeps the boards' vertical
+   rule so the row reads as two cells. */
+.players-screen__player > .players-screen__kit {
+  border-inline-end: 0.22em solid currentColor;
+}
+
+/* The name and its short are stacked: the short takes its own line so the name
+   has the cell's whole 214px to itself. */
+/* The name cell is also the way into the player's record, so it is a button
+   that keeps the row's own type and surface: only the text moves on press. */
+.players-screen__player-name {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12em;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  font: inherit;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: inherit;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The name fills its line at the largest size a full 14-character name fits in
+   the cell — measured 214/214 at 412 wide. */
+.players-screen__player-full {
+  font-size: clamp(0.9rem, 5.4vw, 2.2rem);
+}
+
+/* The short fills the line under it, in the same caps as the board, one step
+   under the name so the name stays the louder of the two. */
+.players-screen__player-short {
+  font-size: 2.4vh;
+  font-size: 2.4dvh;
+}
+
+.players-screen__player-name > * {
+  transition: transform 140ms ease-out;
+}
+
+.players-screen__player-name:active > * {
+  transform: scale(0.8);
+}
+
+/* A kit is filled by its pair: shirt above, shaded twin below. */
+.players-screen__kit {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+.players-screen__swatch {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.players-screen__swatch-shirt {
+  background: var(--swatch-shirt);
+}
+
+.players-screen__swatch-shade {
+  background: var(--swatch-shade);
+}
+
+.players-screen__kit--one {
+  --swatch-shirt: var(--player-one-base);
+  --swatch-shade: var(--player-one-shade);
+}
+
+.players-screen__kit--two {
+  --swatch-shirt: var(--player-two-base);
+  --swatch-shade: var(--player-two-shade);
+}
+
+.players-screen__kit--three {
+  --swatch-shirt: var(--player-three-base);
+  --swatch-shade: var(--player-three-shade);
+}
+
+.players-screen__kit--four {
+  --swatch-shirt: var(--player-four-base);
+  --swatch-shade: var(--player-four-shade);
+}
+
+/* Delete is red with a black X: the bull doing the destructive job, as a square
+   the size of the kit swatch at the other end of the row. */
+.players-screen__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  color: var(--black-dog-black);
+  background: var(--double-bull-red);
+  border: 0;
+  border-inline-start: 0.22em solid currentColor;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.players-screen__delete-icon {
+  width: 100%;
+  height: 100%;
+  transition: transform 140ms ease-out;
+}
+
+.players-screen__delete:active .players-screen__delete-icon {
+  transform: scale(0.8);
+}
+
+/* Entry rows (name, short): a shaded label plate and a chalk entry cell, split
+   1 / 2, exactly like a setup name row. */
+.players-screen__field {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  min-height: 0;
+  font-size: clamp(0.8rem, 4.2vw, 1.35rem);
+  color: var(--chalk-line);
+  border-block-end: 0.08em solid currentColor;
+}
+
+.players-screen__field > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  /* The plate's word fills its cell; the rule is thinned against that bigger
+     type so it still draws as roughly 3px. */
+  font-size: 4.4vh;
+  font-size: 4.4dvh;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  /* The plate takes the chosen kit's shaded half, the entry cell its shirt, so
+     the name and short are typed in the colours they will be read in. */
+  background: var(--swatch-shade);
+  border-inline-end: 0.09em solid currentColor;
+  transition: background-color 280ms ease-out;
+}
+
+.players-screen__field input {
+  min-width: 0;
+  padding: 0 0.15em;
+  font: inherit;
+  font-size: 5vh;
+  font-size: 5dvh;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--chalk-line);
+  background: var(--swatch-shirt);
+  border: 0;
+  transition: background-color 280ms ease-out;
+}
+
+.players-screen__field input:focus-visible {
+  outline: 0.12em solid var(--last-dart-spotlight);
+  outline-offset: -0.12em;
+}
+
+/* Kit picker: four kits side by side. The chosen one is at full strength and
+   every other one fades, so the choice is read from the colours themselves —
+   no tick, no label. Rules stay hairlines at the small strip font. */
+.players-screen__palette-group {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  min-height: 0;
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+  color: var(--chalk-line);
+  background: var(--black-dog-black);
+}
+
+.players-screen__palette-button {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  opacity: 0.5;
+  border: 0;
+  border-block-end: 0.08em solid currentColor;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 140ms ease-out;
+}
+
+.players-screen__palette-button + .players-screen__palette-button {
+  border-inline-start: 0.22em solid currentColor;
+}
+
+/* The chosen kit wears a white ring as well as full strength. It is an outline,
+   drawn inside the cell, so nothing about the flush strip moves. */
+.players-screen__palette-button[aria-pressed='true'] {
+  opacity: 1;
+  outline: 0.22em solid var(--chalk-line);
+  outline-offset: -0.22em;
+}
+
+.players-screen__palette-button .players-screen__swatch {
+  transition: transform 140ms ease-out;
+}
+
+.players-screen__palette-button:active .players-screen__swatch {
+  transform: scale(0.8);
+}
+
+/* The bottom line is two equal action cells: back on the left, add on the right.
+   The strip keeps the small cell font so its 0.22em rule measures a hairline. */
+.players-screen__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 0;
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+}
+
+/* Back wears the Cricket screen's fat undo arrow — the same glyph, viewBox and
+   stretch — on the blackboard, so leaving reads like taking a dart back. */
+.players-screen__back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  color: var(--chalk-line);
+  background: var(--black-dog-black);
+  border: 0;
+  border-inline-end: 0.22em solid currentColor;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.players-screen__back-icon {
+  width: 100%;
+  height: 100%;
+  transition: transform 140ms ease-out;
+}
+
+.players-screen__back:active .players-screen__back-icon {
+  transform: scale(0.8);
+}
+
+/* Add is the primary action, wearing the title bar's pub carpet with a chalk
+   plus, no word, in the right half of the bottom line. */
+.players-screen__add-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  color: var(--chalk-line);
+  background: var(--pub-carpet-violet);
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.players-screen__add-button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.players-screen__add-icon {
+  width: 100%;
+  height: 100%;
+  transition: transform 140ms ease-out;
+}
+
+.players-screen__add-button:active .players-screen__add-icon {
+  transform: scale(0.8);
+}
+
+/* Game setup screen: the same language as the boards — full-bleed regions butted
+   together, no radii, no gaps, currentColor rules, one accent surface per job.
+   Rows: title 14dvh, variant 14dvh, players 44dvh, best of 14dvh, start 14dvh.
+   The player region is the players screen's own list height, four 11dvh rows, so
+   the saved players are read the same size on both screens.
+   See the pub-darts-style skill. */
+.game-setup {
+  display: grid;
+  grid-template-rows: 14dvh 14dvh 44dvh 14dvh 14dvh;
+  height: 100dvh;
+  min-height: 0;
+  color: var(--chalk-dust);
+  background: var(--pub-dark);
+}
+
+/* The public bar's carpet behind the title, with the rule under it thinned
+   against the title's own size so it stays a hairline. The bar is the players
+   screen's header: an arrow cell at each end, there to turn to the next game. */
+.game-setup__header {
+  display: grid;
+  grid-template-columns: 8dvh 1fr 8dvh;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--chalk-line);
+  background: var(--pub-carpet-violet);
+  border-block-end: 0.02em solid currentColor;
+}
+
+.game-setup__title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 6vh;
+  font-size: 6dvh;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Game arrows: whole cells, chalk chevrons, inert while Cricket is the only
+   game there is. */
+.game-setup__page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.game-setup__page:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.game-setup__page-icon {
+  width: 100%;
+  height: 100%;
+  transition: transform 140ms ease-out;
+}
+
+.game-setup__page:active .game-setup__page-icon {
+  transform: scale(0.8);
+}
+
+/* Both choice rows are flush strips of cells. The strip keeps the small cell
+   font so its em-measured rules stay hairlines; the labels size themselves. */
+.game-setup__choice-group {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  min-height: 0;
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+}
+
+.game-setup__choice-button,
+.game-setup__start-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  font: inherit;
+  line-height: 1;
+  color: var(--black-dog-black);
+  background: var(--beer-foam-white);
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Cells interlock black and white like the marker board, so the chosen one is
+   told apart by its colour rather than by a tick. */
+.game-setup__choice-button:nth-child(odd) {
+  color: var(--beer-foam-white);
+  background: var(--black-dog-black);
+}
+
+/* The chosen cell wears the pub carpet; its rules turn chalk with its own text,
+   and a chalk ring marks it inside the cell, like the players screen's chosen
+   kit. An outline, so the flush strip never moves. */
+.game-setup__choice-button[aria-pressed='true'] {
+  color: var(--chalk-line);
+  background: var(--pub-carpet-violet);
+  outline: 0.22em solid var(--chalk-line);
+  outline-offset: -0.22em;
+}
+
+/* The chosen mode wears the start button's own amber and chalkboard weight, so
+   the choice above and the action below read as one promise. */
+.game-setup__variant-button[aria-pressed='true'] {
+  color: var(--chalkboard-white);
+  background: var(--bounce-out-amber);
+}
+
+.game-setup__choice-button + .game-setup__choice-button {
+  border-inline-start: 0.22em solid currentColor;
+}
+
+.game-setup__choice-button {
+  border-block-end: 0.08em solid currentColor;
+}
+
+/* A best-of value fills its cell. The variant names are much longer, so they
+   size off the cell's width to stay on one line. */
+.game-setup__choice-label {
+  font-size: 6vh;
+  font-size: 6dvh;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.game-setup__variant-button .game-setup__choice-label {
+  font-size: clamp(0.8rem, 4.2vw, 1.4rem);
+}
+
+/* Every cell is the hit area; its label is the only content, so it shrinks
+   under the finger like a marker glyph. */
+.game-setup__choice-label,
+.game-setup__start-label {
+  transition: transform 140ms ease-out;
+}
+
+.game-setup__choice-button:active .game-setup__choice-label,
+.game-setup__start-button:active .game-setup__start-label {
+  transform: scale(0.8);
+}
+
+/* Player rows: the players screen's saved rows in its own order — a kit rail
+   then the name with its short — at the same 11dvh row in the same 44dvh
+   region, so there is always room for four. Only the players who will throw
+   are listed, top-aligned; the rest of the region stays empty, as an unused
+   slot does on the players screen. */
+.game-setup__players {
+  display: grid;
+  grid-auto-rows: 11dvh;
+  align-content: start;
+  min-height: 0;
+  overflow: hidden;
+  font-size: clamp(0.8rem, 4.2vw, 1.35rem);
+}
+
+.game-setup__player {
+  display: grid;
+  grid-template-columns: 11dvh 1fr;
+  min-height: 0;
+  color: var(--chalk-line);
+  background: var(--black-dog-black);
+  border-block-end: 0.08em solid currentColor;
+}
+
+/* The kit rail is a swatch, not a button, but it keeps the boards' vertical
+   rule so the row reads as two cells. */
+.game-setup__player > .game-setup__kit {
+  border-inline-end: 0.22em solid currentColor;
+}
+
+/* An empty slot is a player who is not playing, so it wears the pair the
+   Cricket screen gives everyone waiting their turn: the grey shirt and its
+   deeper twin, alternating slot by slot like the score board's rows. */
+.game-setup__player--void {
+  background: var(--spectator-grey);
+}
+
+.game-setup__player--void:nth-child(even) {
+  background: var(--spectator-grey-deep);
+}
+
+.game-setup__kit--void {
+  --swatch-shirt: var(--spectator-grey);
+  --swatch-shade: var(--spectator-grey-deep);
+}
+
+/* The X that drops a player from the match sits on the swatch itself, so the
+   kit is the control: the players screen's delete glyph in white, its square
+   taken from the 11dvh kit cell. */
+.game-setup__drop,
+.game-setup__add {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.game-setup__drop {
+  color: var(--beer-foam-white);
+}
+
+/* The plus on the first empty slot is black on the waiting grey, so it reads as
+   the one live cell there. */
+.game-setup__add {
+  color: var(--black-dog-black);
+}
+
+.game-setup__drop-icon,
+.game-setup__add-icon {
+  width: 100%;
+  height: 100%;
+  transition: transform 140ms ease-out;
+}
+
+.game-setup__drop:active .game-setup__drop-icon,
+.game-setup__add:active .game-setup__add-icon {
+  transform: scale(0.8);
+}
+
+/* The name sits between two arrow cells, the players screen's page chevrons,
+   which turn the slot to another saved player. */
+.game-setup__player-name {
+  display: grid;
+  grid-template-columns: 8dvh 1fr 8dvh;
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* The arrows keep the row's vertical rules, so the name stays its own cell
+   between them. */
+.game-setup__cycle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.game-setup__cycle--prev {
+  border-inline-end: 0.22em solid currentColor;
+}
+
+.game-setup__cycle--next {
+  border-inline-start: 0.22em solid currentColor;
+}
+
+/* A slot with no other saved player to turn to: the arrows are inert. */
+.game-setup__cycle:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.game-setup__cycle-icon {
+  width: 100%;
+  height: 100%;
+  transition: transform 140ms ease-out;
+}
+
+.game-setup__cycle:active .game-setup__cycle-icon {
+  transform: scale(0.8);
+}
+
+/* Name and short stack, so the name owns the cell between the two arrows. */
+.game-setup__player-names {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12em;
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* The two 8dvh arrows leave the name 169px, so it sizes to the largest a full
+   14-character name fits there. */
+.game-setup__player-full {
+  font-size: clamp(0.9rem, 4.2vw, 2.2rem);
+}
+
+/* The short is one step under the name, as on the players screen. */
+.game-setup__player-short {
+  font-size: 2.4vh;
+  font-size: 2.4dvh;
+}
+
+/* A kit is filled by its pair: shirt above, shaded twin below. It is the
+   positioning ground for the X or the plus, which sit over the swatch itself. */
+.game-setup__kit {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+.game-setup__swatch {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.game-setup__swatch-shirt {
+  background: var(--swatch-shirt);
+}
+
+.game-setup__swatch-shade {
+  background: var(--swatch-shade);
+}
+
+.game-setup__kit--one {
+  --swatch-shirt: var(--player-one-base);
+  --swatch-shade: var(--player-one-shade);
+}
+
+.game-setup__kit--two {
+  --swatch-shirt: var(--player-two-base);
+  --swatch-shade: var(--player-two-shade);
+}
+
+.game-setup__kit--three {
+  --swatch-shirt: var(--player-three-base);
+  --swatch-shade: var(--player-three-shade);
+}
+
+.game-setup__kit--four {
+  --swatch-shirt: var(--player-four-base);
+  --swatch-shade: var(--player-four-shade);
+}
+
+/* Start is the primary action: the scorer board's amber, full width, where the
+   marker board keeps its own action row. */
+.game-setup__start-button {
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+  color: var(--chalkboard-white);
+  background: var(--bounce-out-amber);
+}
+
+/* Fewer than two saved players: there is no game to start. */
+.game-setup__start-button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.game-setup__start-label {
+  font-size: 5vh;
+  font-size: 5dvh;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* One player's record: header 14dvh, variant filter 10dvh, eight readout rows
+   64dvh, back 12dvh. */
+.stats-detail {
+  display: grid;
+  grid-template-rows: 14dvh 10dvh 64dvh 12dvh;
+  height: 100dvh;
+  min-height: 0;
+  color: var(--chalk-dust);
+  background: var(--pub-dark);
+  text-transform: uppercase;
+}
+
+.stats-detail__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12em;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--chalk-line);
+  background: var(--pub-carpet-violet);
+  border-block-end: 0.02em solid currentColor;
+}
+
+.stats-detail__name {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 5vh;
+  font-size: 5dvh;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.stats-detail__short {
+  font-size: 2.4vh;
+  font-size: 2.4dvh;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+/* The variant filter is the setup screen's choice strip at full width: cells
+   interlock black and white, and the chosen one wears the pub carpet. */
+.stats-detail__filter {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  min-height: 0;
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+}
+
+.stats-detail__filter-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  font: inherit;
+  line-height: 1;
+  color: var(--beer-foam-white);
+  background: var(--black-dog-black);
+  border: 0;
+  border-block-end: 0.08em solid currentColor;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.stats-detail__filter-button:nth-child(even) {
+  color: var(--black-dog-black);
+  background: var(--beer-foam-white);
+}
+
+.stats-detail__filter-button + .stats-detail__filter-button {
+  border-inline-start: 0.22em solid currentColor;
+}
+
+.stats-detail__filter-button[aria-pressed='true'] {
+  color: var(--chalk-line);
+  background: var(--pub-carpet-violet);
+  outline: 0.22em solid var(--chalk-line);
+  outline-offset: -0.22em;
+}
+
+.stats-detail__filter-label {
+  font-size: clamp(0.65rem, 3.5vw, 1.05rem);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition: transform 140ms ease-out;
+}
+
+.stats-detail__filter-button:active .stats-detail__filter-label {
+  transform: scale(0.8);
+}
+
+/* Eight readout rows, label left and value right, alternating black and white
+   so the table interlocks like the marker board. */
+.stats-detail__rows {
+  display: grid;
+  grid-auto-rows: 1fr;
+  min-height: 0;
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+}
+
+.stats-detail__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--beer-foam-white);
+  background: var(--black-dog-black);
+  border-block-end: 0.08em solid currentColor;
+}
+
+.stats-detail__row:nth-child(even) {
+  color: var(--black-dog-black);
+  background: var(--beer-foam-white);
+}
+
+.stats-detail__label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  border-inline-end: 0.22em solid currentColor;
+}
+
+.stats-detail__label > span {
+  font-size: 3.6vh;
+  font-size: 3.6dvh;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.stats-detail__value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 5vh;
+  font-size: 5dvh;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.stats-detail__back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  color: var(--chalk-line);
+  background: var(--black-dog-black);
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.stats-detail__back-icon {
+  width: 50%;
+  height: 100%;
+  transition: transform 140ms ease-out;
+}
+
+.stats-detail__back:active .stats-detail__back-icon {
+  transform: scale(0.8);
+}
+
+/* End screen: the match totals, a row per player, then Rematch and Home. The
+   winner's row wears their kit; the rest wear the waiting greys, exactly as the
+   board tells the thrower from everyone else. */
+.end-screen {
+  display: grid;
+  grid-template-rows: 1fr 12dvh;
+  height: 100dvh;
+  min-height: 0;
+  color: var(--chalkboard-white);
+  background: var(--pub-dark);
+}
+
+.end-screen__totals {
+  display: grid;
+  grid-template-rows: repeat(var(--end-rows, 2), 1fr);
+  min-height: 0;
+}
+
+.end-screen__row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1.3fr;
+  min-height: 0;
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+  color: var(--chalkboard-white);
+  background: var(--player-base);
+}
+
+.end-screen__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-block-end: 0.08em solid currentColor;
+}
+
+.end-screen__cell + .end-screen__cell {
+  border-inline-start: 0.22em solid currentColor;
+}
+
+.end-screen__code {
+  font-size: 7dvh;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.end-screen__cell--total {
+  gap: 0.4dvh;
+}
+
+.end-screen__value {
+  font-size: 5dvh;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.end-screen__unit {
+  font-size: 2.2dvh;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.end-screen__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 0;
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+}
+
+.end-screen__rematch,
+.end-screen__home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  font: inherit;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.end-screen__rematch {
+  color: var(--chalkboard-white);
+  background: var(--bounce-out-amber);
+}
+
+.end-screen__home {
+  color: var(--chalk-line);
+  background: var(--black-dog-black);
+  border-inline-start: 0.22em solid currentColor;
+}
+
+.end-screen__action-label {
+  font-size: 5dvh;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: transform 140ms ease-out;
+}
+
+.end-screen__rematch:active .end-screen__action-label,
+.end-screen__home:active .end-screen__action-label {
+  transform: scale(0.8);
+}
+
+/* A leg banked mid-match: every player's legs with the taker's column in their
+   kit, held for a moment while the hand-over opens the next leg. */
+.leg-screen {
+  display: grid;
+  grid-template-columns: repeat(var(--leg-columns, 2), 1fr);
+  height: 100dvh;
+  min-height: 0;
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+  color: var(--chalkboard-white);
+  background: var(--pub-dark);
+}
+
+.leg-screen__column {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  min-width: 0;
+  min-height: 0;
+  background: var(--player-base);
+}
+
+.leg-screen__column + .leg-screen__column {
+  border-inline-start: 0.22em solid currentColor;
+}
+
+.leg-screen__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.leg-screen__cell--legs {
+  font-size: 14dvh;
+  font-weight: 700;
+  line-height: 1;
+  background: var(--player-base);
+}
+
+.leg-screen__cell--name {
+  font-size: 6dvh;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  background: var(--player-shade);
+}
