@@ -44,13 +44,15 @@ function newMatchId() {
   return `m_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`
 }
 
-export function createGame(roster, variant = DEFAULT_VARIANT, bestOf = 1) {
+export function createGame(roster, variant = DEFAULT_VARIANT, bestOf = 1, official = null) {
   return {
     // The saved players this match belongs to, against which the record is filed.
     matchId: newMatchId(),
     variant,
     // How many legs the match is best of: the winner takes the majority.
     bestOf,
+    // The league fixture this match settles, or null for a friendly.
+    official,
     players: roster.map((player, id) => ({
       id,
       // The saved player's own id, kept beside the seat number the board uses.
@@ -171,6 +173,7 @@ function finishDart(game, players, dart) {
     matchId: game.matchId,
     variant: game.variant,
     bestOf: game.bestOf,
+    official: game.official,
     players:
       wins === 0
         ? players
@@ -277,6 +280,9 @@ export function finalizeMatch(game) {
     endedAt: new Date().toISOString(),
     variant: game.variant,
     bestOf: game.bestOf,
+    // The league fixture this match settled, carried into the filed record so
+    // the fixture and the match always name each other.
+    official: game.official,
     winnerId: winner.userId,
     players: game.players.map((player) => ({
       id: player.userId,

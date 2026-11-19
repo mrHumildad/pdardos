@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-function MainMenu({ canContinue, onNewGame, onContinue, onPlayers, onImport, onExport }) {
+function MainMenu({ canContinue, onNewGame, onContinue, onPlayers, onLeagues, onImport, onExport }) {
   const fileInput = useRef(null)
 
   // The picker is invisible; Import is the visible half of the same gesture.
@@ -41,6 +41,10 @@ function MainMenu({ canContinue, onNewGame, onContinue, onPlayers, onImport, onE
 
       <button type="button" className="main-menu__button" onClick={onPlayers}>
         <span className="main-menu__label">Players</span>
+      </button>
+
+      <button type="button" className="main-menu__button" onClick={onLeagues}>
+        <span className="main-menu__label">Comps</span>
       </button>
 
       <button

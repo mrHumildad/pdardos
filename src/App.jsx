@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { App as CapacitorApp } from '@capacitor/app'
+import CompetitionScreen from './CompetitionScreen'
+import CompetitionsScreen from './CompetitionsScreen'
 import ConfigScreen from './ConfigScreen'
+import CreateCompetitionScreen from './CreateCompetitionScreen'
 import CricketScreen from './CricketScreen'
 import EndScreen from './EndScreen'
 import MainMenu from './MainMenu'
 import PlayersScreen from './PlayersScreen'
 import StatsDetailScreen from './StatsDetailScreen'
+import { createCup, createLeague, settleFixture } from './competition'
 import { createGame, finalizeMatch, undoDart } from './game'
 import {
   buildDoc,
@@ -16,7 +20,7 @@ import {
   parseDoc,
   shareDoc,
 } from './groupFile'
-import { usePlayers } from './players'
+import { shortOf, usePlayers } from './players'
 import { usePersistentState } from './usePersistentState'
 import './App.css'
 
@@ -57,6 +61,13 @@ function App() {
   // setup screen must see it too.
   const [players, setPlayers] = usePlayers()
   const [deletions, setDeletions] = usePersistentState('darts.playerDeletions', [])
+  // The leagues made here, and the one whose screen is open. They are built on
+  // this phone from the saved players, so no group code is involved.
+  const [competitions, setCompetitions, competitionsLoaded] = usePersistentState(
+    'darts.competitions',
+    [],
+  )
+  const [competitionId, setCompetitionId] = useState(null)
   const gameRef = useRef(game)
   const screenRef = useRef(screen)
   const inGame = screen === 'game' && game !== null
@@ -99,6 +110,19 @@ function App() {
         : [...current, record].slice(-MAX_MATCHES),
     )
   }, [game, matchesLoaded, setMatches])
+
+  // A match started from a league fixture settles that fixture as it is filed,
+  // so the table moves the moment the winning dart lands. Matching on the match
+  // id keeps one match from settling a fixture twice.
+  useEffect(() => {
+    if (!competitionsLoaded) return
+    if (game === null || game.winner === null || !game.official) return
+    const winner = game.players.find((player) => player.id === game.winner)
+    if (winner === undefined) return
+    setCompetitions((current) =>
+      settleFixture(current, game.official, game.matchId, winner.userId),
+    )
+  }, [game, competitionsLoaded, setCompetitions])
 
   // An imported file is folded in with whatever this phone holds right now, so
   // a match filed while the file was being read is never dropped.
@@ -155,11 +179,45 @@ function App() {
     [setPlayers, setDeletions],
   )
 
+  // A pending fixture starts its match on the league's terms: the two entrants
+  // and the variant and length the league was made with. The setup screen is
+  // skipped because there is nothing left to choose.
+  const startFixture = useCallback(
+    (competition, fixture) => {
+      const roster = [fixture.homeId, fixture.awayId].map((id) => {
+        const entrant = competition.entrants.find((candidate) => candidate.id === id)
+        const saved = players.find((player) => player.id === id)
+        return {
+          id,
+          name: saved === undefined ? entrant.name : saved.name,
+          short: saved === undefined ? entrant.short : shortOf(saved),
+        }
+      })
+
+      setGame(
+        createGame(roster, competition.variant, competition.bestOf, {
+          competitionId: competition.id,
+          kind: competition.kind,
+          name: competition.name,
+          fixtureId: fixture.id,
+        }),
+      )
+      setScreen('game')
+    },
+    [players],
+  )
+
   // One dart back, whoever asked for it. The ref is updated here as well so two
   // presses in a row undo two darts instead of applying the same undo twice.
   const handleBack = useCallback(() => {
     const current = gameRef.current
     if (screenRef.current === 'game' && current !== null) {
+      // A league result is official the moment it is filed: the fixture has
+      // already read it, so there is no dart to take back.
+      if (current.official && current.winner !== null) {
+        log('back: official result is final')
+        return
+      }
       const next = undoDart(current)
       log('back: undo', { from: summary(current), to: summary(next) })
       gameRef.current = next
@@ -169,6 +227,16 @@ function App() {
     if (screenRef.current === 'stats-detail') {
       log('back: players')
       setScreen('players')
+      return
+    }
+    if (screenRef.current === 'league' || screenRef.current === 'league-new') {
+      log('back: leagues')
+      setScreen('leagues')
+      return
+    }
+    if (screenRef.current === 'leagues') {
+      log('back: menu')
+      setScreen('menu')
       return
     }
     if (screenRef.current === 'setup' || screenRef.current === 'players') {
@@ -304,6 +372,52 @@ function App() {
     )
   }
 
+  if (screen === 'league-new') {
+    return (
+      <CreateCompetitionScreen
+        players={players}
+        onCreate={(fields) => {
+          const competition = fields.kind === 'cup' ? createCup(fields) : createLeague(fields)
+          setCompetitions((current) => [...current, competition])
+          setCompetitionId(competition.id)
+          setScreen('league')
+        }}
+      />
+    )
+  }
+
+  if (screen === 'leagues' || screen === 'league') {
+    const competition =
+      screen === 'league'
+        ? competitions.find((candidate) => candidate.id === competitionId)
+        : undefined
+
+    // A league id with no league behind it (never created, or gone) simply
+    // shows the list, rather than an empty screen with no way out.
+    if (competition === undefined) {
+      return (
+        <CompetitionsScreen
+          competitions={competitions}
+          onOpen={(id) => {
+            setCompetitionId(id)
+            setScreen('league')
+          }}
+          onCreate={() => setScreen('league-new')}
+          onBack={() => setScreen('menu')}
+        />
+      )
+    }
+
+    return (
+      <CompetitionScreen
+        competition={competition}
+        matches={matches}
+        onPlay={(fixture) => startFixture(competition, fixture)}
+        onBack={() => setScreen('leagues')}
+      />
+    )
+  }
+
   if (screen === 'stats-detail' && statsPlayer !== null) {
     return (
       <StatsDetailScreen
@@ -320,6 +434,7 @@ function App() {
       onNewGame={() => setScreen('setup')}
       onContinue={() => setScreen('game')}
       onPlayers={() => setScreen('players')}
+      onLeagues={() => setScreen('leagues')}
       onImport={importFile}
       onExport={exportFile}
     />

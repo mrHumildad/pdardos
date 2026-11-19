@@ -1799,3 +1799,510 @@
   letter-spacing: 0.02em;
   background: var(--player-shade);
 }
+
+/* Leagues: made on this phone, played from their fixtures, read off a table.
+   The option strips are the setup screen's own choice cells, so a choice reads
+   the same everywhere in the app. The three screens keep the boards' flush
+   regions, hairlines and one accent per job.
+   See the pub-darts-style skill. */
+.leagues-screen {
+  display: grid;
+  grid-template-rows: 14dvh 1fr 12dvh;
+  height: 100dvh;
+  min-height: 0;
+  color: var(--chalk-dust);
+  background: var(--pub-dark);
+  text-transform: uppercase;
+}
+
+.leagues-screen__header,
+.league-form__header,
+.league__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--chalk-line);
+  background: var(--pub-carpet-violet);
+  border-block-end: 0.02em solid currentColor;
+}
+
+.leagues-screen__title,
+.league-form__title {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 5vh;
+  font-size: 5dvh;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* A league's name is typed rather than written on a board, so the title sizes
+   off the screen's width and never runs past the bar. */
+.league__title {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: clamp(0.9rem, 4.4vw, 2.2rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* The saved leagues, one strip each, with how much of it has been played. The
+   list scrolls past four, because a league is not paged like the saved players. */
+.leagues-screen__list {
+  display: grid;
+  grid-auto-rows: 11dvh;
+  align-content: start;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  list-style: none;
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+  box-shadow: inset 0 -0.08em 0 var(--chalk-line);
+}
+
+.leagues-screen__open {
+  display: grid;
+  grid-template-columns: 1fr 12dvh;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  font: inherit;
+  line-height: 1;
+  color: var(--chalk-line);
+  background: var(--black-dog-black);
+  border: 0;
+  border-block-end: 0.08em solid currentColor;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.leagues-screen__name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: clamp(0.9rem, 4.6vw, 1.7rem);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.leagues-screen__progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 2.6vh;
+  font-size: 2.6dvh;
+  letter-spacing: 0.02em;
+  border-inline-start: 0.22em solid currentColor;
+}
+
+.leagues-screen__open > * {
+  transition: transform 140ms ease-out;
+}
+
+.leagues-screen__open:active > * {
+  transform: scale(0.8);
+}
+
+/* The bottom line of a list screen: back on the left, the primary add on the
+   right, both whole cells, the boards' fat arrow and plus. */
+.action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 0;
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+}
+
+.action-back,
+.action-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.action-back {
+  color: var(--chalk-line);
+  background: var(--black-dog-black);
+}
+
+.action-add {
+  color: var(--chalk-line);
+  background: var(--pub-carpet-violet);
+  border-inline-start: 0.22em solid currentColor;
+}
+
+.action-add:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.action-back-icon,
+.action-add-icon {
+  width: 100%;
+  height: 100%;
+  transition: transform 140ms ease-out;
+}
+
+.action-back:active .action-back-icon,
+.action-add:active .action-add-icon {
+  transform: scale(0.8);
+}
+
+/* New competition: rows title 14dvh, kind 10dvh, name 10dvh, saved players 1fr,
+   variant 10dvh, best of 10dvh, create 12dvh. */
+.league-form {
+  display: grid;
+  grid-template-rows: 14dvh 10dvh 10dvh 1fr 10dvh 10dvh 12dvh;
+  height: 100dvh;
+  min-height: 0;
+  color: var(--chalk-dust);
+  background: var(--pub-dark);
+}
+
+.league-form__field {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  min-height: 0;
+  font-size: clamp(0.8rem, 4.2vw, 1.35rem);
+  color: var(--chalk-line);
+  border-block-end: 0.08em solid currentColor;
+}
+
+.league-form__field > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 4.4vh;
+  font-size: 4.4dvh;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  background: var(--last-orders-teal);
+  border-inline-end: 0.09em solid currentColor;
+}
+
+.league-form__field input {
+  min-width: 0;
+  padding: 0 0.15em;
+  font: inherit;
+  font-size: 5vh;
+  font-size: 5dvh;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--chalk-line);
+  background: var(--flat-lager-teal);
+  border: 0;
+}
+
+.league-form__field input:focus-visible {
+  outline: 0.12em solid var(--last-dart-spotlight);
+  outline-offset: -0.12em;
+}
+
+/* The saved players, one strip each: tap to put that player in. The chosen
+   strips wear the carpet violet, the one colour that means "in" in this app. */
+.league-form__entrants {
+  display: grid;
+  grid-auto-rows: 11dvh;
+  align-content: start;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  list-style: none;
+  font-size: clamp(0.8rem, 4.2vw, 1.35rem);
+  box-shadow: inset 0 -0.08em 0 var(--chalk-line);
+}
+
+.league-form__entrant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12em;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  font: inherit;
+  line-height: 1;
+  color: var(--chalk-line);
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: var(--black-dog-black);
+  border: 0;
+  border-block-end: 0.08em solid currentColor;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.league-form__entrant[aria-pressed='true'] {
+  background: var(--pub-carpet-violet);
+}
+
+.league-form__entrant:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.league-form__entrant-name {
+  font-size: clamp(0.9rem, 4.6vw, 1.7rem);
+  letter-spacing: 0.02em;
+}
+
+.league-form__entrant-short {
+  font-size: 2.4vh;
+  font-size: 2.4dvh;
+}
+
+.league-form__entrant > * {
+  transition: transform 140ms ease-out;
+}
+
+.league-form__entrant:active > * {
+  transform: scale(0.8);
+}
+
+/* One league: rows header 14dvh, the fixtures/table switch 10dvh, the board
+   1fr, back 12dvh. */
+.league {
+  display: grid;
+  grid-template-rows: 14dvh 10dvh 1fr 12dvh;
+  height: 100dvh;
+  min-height: 0;
+  color: var(--chalk-dust);
+  background: var(--pub-dark);
+  text-transform: uppercase;
+}
+
+/* A fixture is two codes either side of its result. A pending one is the
+   league's entry cell — the marker teal — because the whole row is the way to
+   play it; a played one is back on the blackboard, the winner in their kit. */
+.league__fixtures {
+  display: grid;
+  grid-auto-rows: 11dvh;
+  align-content: start;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  list-style: none;
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+}
+
+.league__fixture {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  font: inherit;
+  line-height: 1;
+  color: var(--chalk-line);
+  border: 0;
+  border-block-end: 0.08em solid currentColor;
+}
+
+.league__fixture--pending {
+  background: var(--flat-lager-teal);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.league__fixture--played {
+  background: var(--black-dog-black);
+}
+
+.league__code {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  font-size: 3.4vh;
+  font-size: 3.4dvh;
+  letter-spacing: 0.02em;
+}
+
+.league__middle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  font-size: 2.4vh;
+  font-size: 2.4dvh;
+  letter-spacing: 0.02em;
+  border-inline: 0.22em solid currentColor;
+}
+
+.league__fixture > * {
+  transition: transform 140ms ease-out;
+}
+
+.league__fixture--pending:active > * {
+  transform: scale(0.8);
+}
+
+/* The winner's code wears their kit, so a result reads as a person. */
+.league__win--one {
+  background: var(--player-one-base);
+}
+
+.league__win--two {
+  background: var(--player-two-base);
+}
+
+.league__win--three {
+  background: var(--player-three-base);
+}
+
+.league__win--four {
+  background: var(--player-four-base);
+}
+
+/* The table: a heading strip, then one row per entrant, the checkerboard
+   flipping row to row like the marker board. */
+.league__table {
+  display: grid;
+  grid-template-rows: 7dvh 1fr;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.league__table-head,
+.league__table-row {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 1fr 1fr 1.6fr 1fr;
+  min-height: 0;
+}
+
+.league__table-head {
+  color: var(--chalk-line);
+  background: var(--last-orders-teal);
+  border-block-end: 0.08em solid currentColor;
+  font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+}
+
+.league__table-body {
+  display: grid;
+  grid-template-rows: repeat(var(--league-rows, 1), 1fr);
+  min-height: 0;
+}
+
+.league__table-row {
+  color: var(--chalk-line);
+  background: var(--black-dog-black);
+  border-block-end: 0.08em solid currentColor;
+  font-size: 2.6vh;
+  font-size: 2.6dvh;
+}
+
+.league__table-row:nth-child(even) {
+  color: var(--black-dog-black);
+  background: var(--beer-foam-white);
+}
+
+.league__table-head > *,
+.league__table-row > * {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.league__table-head > * + *,
+.league__table-row > * + * {
+  border-inline-start: 0.22em solid currentColor;
+}
+
+.league__table-row > .league__cell--name {
+  font-size: 3.2vh;
+  font-size: 3.2dvh;
+  letter-spacing: 0.02em;
+}
+
+.league__back {
+  width: 100%;
+}
+
+/* A cup's bracket: one band per round, from the first round down to the final.
+   The band's name is a strip of its own, in the deeper teal so it reads as a
+   heading rather than a tie. */
+.league__bracket {
+  display: grid;
+  grid-auto-rows: min-content;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.league__round {
+  display: grid;
+  grid-template-rows: 7dvh;
+  grid-auto-rows: 11dvh;
+  min-height: 0;
+  list-style: none;
+}
+
+.league__round-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 2.6vh;
+  font-size: 2.6dvh;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--chalk-line);
+  background: var(--last-orders-teal);
+  border-block-end: 0.08em solid currentColor;
+}
+
+/* A branch still waiting on its feeder: drawn, not offered — the waiting grey
+   the app gives anyone who is not on the oche. */
+.league__fixture--void {
+  background: var(--spectator-grey-deep);
+  color: var(--chalk-line);
+}
